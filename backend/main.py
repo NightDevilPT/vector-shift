@@ -1,0 +1,69 @@
+# backend/main.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow requests from frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class Node(BaseModel):
+    id: str
+
+class Edge(BaseModel):
+    source: str
+    target: str
+
+class PipelineData(BaseModel):
+    nodes: List[Node]
+    edges: List[Edge]
+
+
+@app.get('/')
+async def root():
+    return {"message": "Python backend is working"}
+
+@app.post('/pipelines/parse')
+async def parse_pipeline(data: PipelineData):
+    num_nodes = len(data.nodes)
+    num_edges = len(data.edges)
+    is_dag_result = is_dag(data.nodes, data.edges)
+    return {"num_nodes": num_nodes, "num_edges": num_edges, "is_dag": is_dag_result}
+
+def is_dag(nodes, edges):
+    # Convert edges to adjacency list
+    adj_list = {node.id: [] for node in nodes}
+    for edge in edges:
+        adj_list[edge.source].append(edge.target)
+
+    # Detect cycle using DFS
+    visited = set()
+    stack = set()
+
+    def dfs(node):
+        if node in stack:
+            return False  # cycle detected
+        if node in visited:
+            return True
+        stack.add(node)
+        for neighbor in adj_list.get(node, []):
+            if not dfs(neighbor):
+                return False
+        stack.remove(node)
+        visited.add(node)
+        return True
+
+    # Check each node
+    for node in adj_list:
+        if node not in visited:
+            if not dfs(node):
+                return False
+    return True
