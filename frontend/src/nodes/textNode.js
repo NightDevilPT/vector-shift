@@ -1,44 +1,56 @@
-// frontend/src/nodes/textNode.js
-
-import { useState, useEffect } from 'react';
-import { BaseNode } from './baseNode';
-import { Handle, Position } from 'reactflow';
+import { useState, useEffect, useRef } from "react";
+import { useStore } from "../store";
+import { BaseNode } from "./baseNode";
+import { Position } from "reactflow";
 
 export const TextNode = ({ id, data }) => {
-  const [currText, setCurrText] = useState(data?.text || '{{input}}');
-  const [nodeStyle, setNodeStyle] = useState({ height: 80 });  // Initialize with default height
-  const [handles, setHandles] = useState([]);  // Store handles for variables
+  const [currText, setCurrText] = useState(data?.text || "{{input}}");
+  const [variables, setVariables] = useState([]); // Store variables from the text
 
-  const handleTextChange = (e) => setCurrText(e.target.value);
+  const updateNodeField = useStore((state) => state.updateNodeField);
+  const textareaRef = useRef(null); // Ref to access textarea
+
+  // Update the text in local and global state
+  const handleTextChange = (e) => {
+    const newText = e.target.value;
+    setCurrText(newText);
+    updateNodeField(id, "text", newText); // Update the raw text in global state
+  };
 
   useEffect(() => {
-    // Dynamically adjust height based on text length
-    const newHeight = Math.max(80, 30 + currText.length * 0.5);
-    setNodeStyle((prevStyle) => ({ ...prevStyle, height: newHeight }));
+    // Adjust textarea dimensions based on content
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; // Reset height
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Adjust height to content
+    }
 
-    // Detect variables in {{variableName}} format
-    const variableMatches = [...new Set(currText.match(/{{(.*?)}}/g))];
-    setHandles(variableMatches);
+    // Detect variables in the format {{variableName}}
+    const variableMatches = Array.from(new Set(currText.match(/{{(.*?)}}/g)));
+    setVariables(variableMatches);
   }, [currText]);
 
+  // Prepare handlers array for BaseNode
+  const handlers = variables.map((variable, index) => ({
+    position: Position.Left,
+    label: variable.replace(/{{|}}/g, ""), // Display name without braces
+  }));
+
   return (
-    <BaseNode style={nodeStyle} sourceHandle={true}>
-      {handles.map((variable, index) => (
-        <Handle
-          key={variable}
-          type="target"
-          position={Position.Left}
-          id={`${id}-${variable}`}
-          style={{ top: `${20 + index * 20}px` }}
-        />
-      ))}
-      <div>
-        <span>Text Node</span>
-      </div>
-      <div>
+    <BaseNode
+      className="text-gray-700 min-w-40"
+      sourceHandle={true}
+      title={"Text Node"}
+      id={id}
+      handlers={handlers} // Pass handlers to BaseNode
+    >
+      <div className="w-full h-full">
         <label>
-          Text:
-          <input type="text" value={currText} onChange={handleTextChange} />
+          <textarea
+            ref={textareaRef} // Attach ref to textarea
+            value={currText}
+            className="w-full h-auto overflow-hidden resize-none rounded-lg border border-gray-300 text-gray-700"
+            onChange={handleTextChange}
+          />
         </label>
       </div>
     </BaseNode>

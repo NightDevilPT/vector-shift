@@ -1,3 +1,9 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -13,8 +19,10 @@ code {
 }
 
 /* frontend/src/index.css */
-.node-container {
-  border-radius: 8px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+.react-flow__handle {
+  width: 10px !important;               /* Equivalent to Tailwind's w-2.5 */
+  height: 10px !important;              /* Equivalent to Tailwind's h-2.5 */
+  border-radius: 50% !important;        /* Equivalent to rounded-full */
+  background-color: white !important;   /* Equivalent to bg-white */
+  border: 1px solid black !important;   /* Equivalent to border-2 border-black */
 }

@@ -33,16 +33,24 @@ async def root():
 
 @app.post('/pipelines/parse')
 async def parse_pipeline(data: PipelineData):
-    num_nodes = len(data.nodes)
-    num_edges = len(data.edges)
-    is_dag_result = is_dag(data.nodes, data.edges)
+    # Extract only node IDs and edge connections from the input payload
+    node_ids = [node.id for node in data.nodes]
+    edges = [(edge.source, edge.target) for edge in data.edges]
+    
+    # Number of nodes and edges
+    num_nodes = len(node_ids)
+    num_edges = len(edges)
+    
+    # Check if the graph is a Directed Acyclic Graph (DAG)
+    is_dag_result = is_dag(node_ids, edges)
+    
     return {"num_nodes": num_nodes, "num_edges": num_edges, "is_dag": is_dag_result}
 
 def is_dag(nodes, edges):
-    # Convert edges to adjacency list
-    adj_list = {node.id: [] for node in nodes}
-    for edge in edges:
-        adj_list[edge.source].append(edge.target)
+    # Convert edges to adjacency list for each node
+    adj_list = {node: [] for node in nodes}
+    for source, target in edges:
+        adj_list[source].append(target)
 
     # Detect cycle using DFS
     visited = set()
@@ -61,7 +69,7 @@ def is_dag(nodes, edges):
         visited.add(node)
         return True
 
-    # Check each node
+    # Check each node to ensure there are no cycles in the graph
     for node in adj_list:
         if node not in visited:
             if not dfs(node):

@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Hardcoded directory path
-const rootDir = './backend';
-const outputFile = 'output.txt';
+const rootDir = './frontend/src';
+const outputFile = 'frontend.txt';
 
 // Function to traverse and process files
 function processDirectory(dir) {
@@ -12,6 +12,12 @@ function processDirectory(dir) {
 
   entries.forEach(entry => {
     const entryPath = path.join(dir, entry.name);
+
+    // Skip "_pycache_" and "env" directories
+    if (entry.isDirectory() && (entry.name === '_pycache_' || entry.name === 'env')) {
+      return; // Skip this directory
+    }
+
     if (entry.isDirectory()) {
       // Recursive call for directories
       processDirectory(entryPath);
