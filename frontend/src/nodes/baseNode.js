@@ -1,6 +1,5 @@
 import { Handle, useUpdateNodeInternals } from "reactflow";
 import { useStore } from "../store";
-import { v4 as uuidv4 } from "uuid";
 import { useEffect } from "react";
 
 export const BaseNode = ({
@@ -10,8 +9,10 @@ export const BaseNode = ({
   style,
   sourceHandle = false,
   targetHandle = false,
-  handlers = [], // New prop: array of handler objects
+  maxConnections = 1, // Limit connections per handle
+  handlers = [], // Array of handler objects
 }) => {
+  const edges = useStore((state) => state.edges); // Access edges from the store
   const removeNode = useStore((state) => state.removeNode);
   const updateNodeInternals = useUpdateNodeInternals(); // Hook to update node internals
 
@@ -20,6 +21,15 @@ export const BaseNode = ({
     updateNodeInternals(id);
   }, [handlers, id, updateNodeInternals]);
 
+  // Check if a specific handle is already fully connected
+  const isHandleFull = (handleId, type) => {
+    return (
+      edges.filter(
+        (edge) => edge[type] === id && edge[`${type}Handle`] === handleId
+      ).length >= maxConnections
+    );
+  };
+
   return (
     <div
       className={`p-3 rounded-lg shadow-md border-[1px] border-slate-200 bg-white ${style}`}
@@ -27,7 +37,7 @@ export const BaseNode = ({
       <div className="flex justify-between items-center w-full font-bold text-base">
         <span>{title}</span>
         <button
-          onClick={() => removeNode(id)} // Placeholder for remove function
+          onClick={() => removeNode(id)} // Remove node from the graph
           className="bg-transparent border-none text-gray-600 cursor-pointer text-lg"
         >
           ✕
@@ -35,13 +45,19 @@ export const BaseNode = ({
       </div>
       <hr className="w-full border-gray-300 my-2" />
 
+      {/* Render handlers dynamically */}
       {handlers.map((handler, index) => (
         <div
           key={handler.id}
           className="absolute flex items-center"
           style={{ top: `${20 + index * 28}px`, left: "0px" }}
         >
-          <Handle type="target" position={handler.position} id={handler.id} />
+          <Handle
+            type="target"
+            position={handler.position}
+            id={handler.id}
+            isConnectable={!isHandleFull(handler.id, "target")} // Disable if fully connected
+          />
           <div className="absolute z-10 right-2 text-xs text-gray-400 ml-1 px-2 rounded-full border border-gray-300">
             {handler.label}
           </div>
@@ -55,6 +71,8 @@ export const BaseNode = ({
         <Handle
           type="source"
           position="right"
+          id="source-handle"
+          isConnectable={!isHandleFull("source-handle", "source")} // Disable if fully connected
           style={{ top: "50%", transform: "translateY(-50%)" }}
         />
       )}
@@ -62,6 +80,8 @@ export const BaseNode = ({
         <Handle
           type="target"
           position="left"
+          id="target-handle"
+          isConnectable={!isHandleFull("target-handle", "target")} // Disable if fully connected
           style={{ top: "50%", transform: "translateY(-50%)" }}
         />
       )}

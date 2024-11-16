@@ -1,6 +1,7 @@
 // edge/customEdge.js
 import React from "react";
-import { getBezierPath, getEdgeCenter } from "reactflow";
+import { getBezierPath } from "reactflow";
+import { RxCross2 } from "react-icons/rx";
 
 const CustomEdge = ({
   id,
@@ -30,13 +31,13 @@ const CustomEdge = ({
   return (
     <>
       <path id={id} className="react-flow__edge-path stroke-gray-400" d={edgePath} />
-      <g transform={`translate(${labelX-15}, ${labelY-15})`}>
+      <g transform={`translate(${labelX - 15}, ${labelY - 15})`}>
         <foreignObject width="30" height="30" className="cursor-pointer">
           <div
-            className="flex items-center justify-center border-2 border-gray-200 bg-white text-slate-400 rounded-full w-6 h-6 text-xs"
+            className="flex items-center justify-center border-2 border-gray-300 bg-white text-gray-600 rounded-full w-6 h-6"
             onClick={handleEdgeRemove}
           >
-            ✕
+            <RxCross2 size={15} /> {/* Add the React Icon here */}
           </div>
         </foreignObject>
       </g>
