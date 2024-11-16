@@ -10,16 +10,27 @@ export const OutputNode = ({ id, data }) => {
   // Access the function to get connected node data and the current edges and nodes
   const getConnectedNodeData = useStore((state) => state.getConnectedNodeData);
   const edges = useStore((state) => state.edges);
-  const nodes = useStore((state) => state.nodes);
 
   useEffect(() => {
     // Get data from any nodes connected to this output node
     const connectedNodes = getConnectedNodeData(id);
-    setConnectedData(connectedNodes.length > 0 ? connectedNodes[0].data : null); // Set to null if no connected nodes
-  }, [id, edges, nodes, getConnectedNodeData]); // Run this effect whenever edges or nodes change
+
+    if (connectedNodes.length > 0) {
+      const nodeData = connectedNodes[0].data;
+
+      // Check if the connected node has transformed data (e.g., resolvedText in TextNode)
+      const transformedData = nodeData;
+      console.log(nodeData,'@#@#@#@#')
+
+      setConnectedData(transformedData);
+    } else {
+      setConnectedData(null); // Set to null if no connected nodes
+    }
+  }, [id, edges, getConnectedNodeData]); // Run this effect whenever edges change
 
   const handleNameChange = (e) => setCurrName(e.target.value);
   const handleTypeChange = (e) => setOutputType(e.target.value);
+  
 
   return (
     <BaseNode className="p-3 text-gray-700" targetHandle={true} title={"Output Node"} id={id}>

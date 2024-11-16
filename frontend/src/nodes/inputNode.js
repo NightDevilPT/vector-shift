@@ -59,3 +59,4 @@ export const InputNode = ({ id, data }) => {
 		</BaseNode>
 	);
 };
+

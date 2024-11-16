@@ -83,4 +83,16 @@ export const useStore = create((set, get) => ({
             edges: updatedEdges
         });
     },
+    updateNodeData: (nodeId, newData) => {
+        set((state) => {
+            const updatedNodes = state.nodes.map((node) => {
+                if (node.id === nodeId) {
+                    return { ...node, data: { ...node.data, ...newData } };
+                }
+                return node;
+            });
+            return { nodes: updatedNodes };
+        });
+    },
+    
 }));
