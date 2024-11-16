@@ -94,5 +94,10 @@ export const useStore = create((set, get) => ({
             return { nodes: updatedNodes };
         });
     },
-    
+    removeEdge: (edgeId) => {
+        console.log("Removing edge:", edgeId); // Add this for debugging
+        set((state) => ({
+            edges: state.edges.filter((edge) => edge.id !== edgeId),
+        }));
+    },    
 }));
